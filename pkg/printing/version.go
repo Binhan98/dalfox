@@ -1,3 +1,4 @@
 package printing
 
-const VERSION = "v2.2.1"
+// VERSION is version of dalfox
+const VERSION = "v2.2.5"

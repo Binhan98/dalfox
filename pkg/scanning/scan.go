@@ -200,7 +200,7 @@ func Scan(target string, options model.Options, sid string) {
 
 		// set path base xss
 
-		if isAllowType(policy["Content-Type"]) {
+		if (isAllowType(policy["Content-Type"]) && !options.OnlyCustomPayload){
 
 			arr := getCommonPayload()
 			for _, avv := range arr {
@@ -287,8 +287,6 @@ func Scan(target string, options model.Options, sid string) {
 
 		// Blind payload
 		if options.BlindURL != "" {
-			spu, _ := url.Parse(target)
-			spd := spu.Query()
 			bpayloads := getBlindPayload()
 
 			//strings.HasPrefix("foobar", "foo") // true
@@ -309,20 +307,20 @@ func Scan(target string, options model.Options, sid string) {
 			}
 
 			// loop parameter list
-			for spk := range spd {
+			for k,_ := range params {
 				// loop payload list
 				for _, bpayload := range bpayloads {
 					// Add plain XSS Query
 					bp := strings.Replace(bpayload, "CALLBACKURL", bcallback, 10)
-					tq, tm := optimization.MakeRequestQuery(target, spk, bp, "toBlind", "toAppend", "NaN", options)
+					tq, tm := optimization.MakeRequestQuery(target, k, bp, "toBlind", "toAppend", "NaN", options)
 					tm["payload"] = "toBlind"
 					query[tq] = tm
 					// Add URL encoded XSS Query
-					etq, etm := optimization.MakeRequestQuery(target, spk, bp, "toBlind", "toAppend", "urlEncode", options)
+					etq, etm := optimization.MakeRequestQuery(target, k, bp, "toBlind", "toAppend", "urlEncode", options)
 					etm["payload"] = "toBlind"
 					query[etq] = etm
 					// Add HTML Encoded XSS Query
-					htq, htm := optimization.MakeRequestQuery(target, spk, bp, "toBlind", "toAppend", "htmlEncode", options)
+					htq, htm := optimization.MakeRequestQuery(target, k, bp, "toBlind", "toAppend", "htmlEncode", options)
 					htm["payload"] = "toBlind"
 					query[htq] = htm
 				}
@@ -337,17 +335,15 @@ func Scan(target string, options model.Options, sid string) {
 				printing.DalLog("SYSTEM", "Custom XSS payload load fail..", options)
 			} else {
 				for _, customPayload := range ff {
-					spu, _ := url.Parse(target)
-					spd := spu.Query()
-					for spk := range spd {
+					for k, _ := range params {
 						// Add plain XSS Query
-						tq, tm := optimization.MakeRequestQuery(target, spk, customPayload, "toHTML", "toAppend", "NaN", options)
+						tq, tm := optimization.MakeRequestQuery(target, k, customPayload, "toHTML", "toAppend", "NaN", options)
 						query[tq] = tm
 						// Add URL encoded XSS Query
-						etq, etm := optimization.MakeRequestQuery(target, spk, customPayload, "inHTML", "toAppend", "urlEncode",options)
+						etq, etm := optimization.MakeRequestQuery(target, k, customPayload, "inHTML", "toAppend", "urlEncode",options)
 						query[etq] = etm
 						// Add HTML Encoded XSS Query
-						htq, htm := optimization.MakeRequestQuery(target, spk, customPayload, "inHTML", "toAppend", "htmlEncode",options)
+						htq, htm := optimization.MakeRequestQuery(target, k, customPayload, "inHTML", "toAppend", "htmlEncode",options)
 						query[htq] = htm
 					}
 				}
@@ -826,7 +822,7 @@ func SendReq(req *http.Request, payload string, options model.Options) (string, 
 		if(strings.Contains(req.URL.Host, "google")){
 			printing.DalLog("GREP", "Found Open Redirector. Payload: " + via[0].URL.String(), options)
 			if options.FoundAction != "" {
-				foundAction(options, via[0].Host, via[0].URL.String(), "BAV")
+				foundAction(options, via[0].Host, via[0].URL.String(), "BAV: OpenRedirect")
 			}
 		}
 
@@ -847,10 +843,11 @@ func SendReq(req *http.Request, payload string, options model.Options) (string, 
 	//for SSTI
 	ssti := getSSTIPayload()
 
-	//grepResult := make(map[string][]string)
+	grepResult := make(map[string][]string)
 
-	grepResult := builtinGrep(str)
-
+	if !options.NoGrep {
+		grepResult = builtinGrep(str)
+	}
 	for k, v := range grepResult {
 		if k == "dalfox-ssti" {
 			really := false
@@ -871,6 +868,11 @@ func SendReq(req *http.Request, payload string, options model.Options) (string, 
 					} else {
 						printing.DalLog("GREP", "Found SSTI via built-in grepping / original request", options)
 					}
+
+					if options.FoundAction != "" {
+						foundAction(options, req.URL.Host, rst.PoC, "BAV: " + rst.Type)
+					}
+
 					for _, vv := range v {
 						printing.DalLog("CODE", vv, options)
 					}
@@ -894,6 +896,11 @@ func SendReq(req *http.Request, payload string, options model.Options) (string, 
 				} else {
 					printing.DalLog("GREP", "Found "+k+" via built-in grepping / original request", options)
 				}
+
+				if options.FoundAction != "" {
+					foundAction(options, req.URL.Host, rst.PoC, "BAV: " + rst.Type)
+				}
+
 				for _, vv := range v {
 					printing.DalLog("CODE", vv, options)
 				}
@@ -925,6 +932,11 @@ func SendReq(req *http.Request, payload string, options model.Options) (string, 
 				for _, vv := range v {
 					printing.DalLog("CODE", vv, options)
 				}
+				
+				if options.FoundAction != "" {
+					foundAction(options, req.URL.Host, rst.PoC, "BAV: " + rst.Type)
+				}
+
 				if options.Format == "json" {
 					printing.DalLog("PRINT", "\"type\":\"GREP\",\"evidence\":\""+k+"\",\"poc\":\""+req.URL.String()+"\"", options)
 				} else {

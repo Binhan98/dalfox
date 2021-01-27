@@ -8,6 +8,9 @@
   <a href="https://snapcraft.io/dalfox"><img alt="dalfox" src="https://snapcraft.io/dalfox/badge.svg" /></a>
   <img src="https://img.shields.io/github/languages/top/hahwul/dalfox?style=flat-square"> <img src="https://api.codacy.com/project/badge/Grade/17cac7b8d1e849a688577f2bbdd6ecd0"> <a href="https://goreportcard.com/report/github.com/hahwul/dalfox"><img src="https://goreportcard.com/badge/github.com/hahwul/dalfox"></a> <img src="https://img.shields.io/github/issues-closed/hahwul/dalfox?style=flat-square"> 
 <a href="https://twitter.com/intent/follow?screen_name=hahwul"><img src="https://img.shields.io/twitter/follow/hahwul?style=flat-square"></a>
+  <img src="https://github.com/hahwul/dalfox/workflows/Go%20build/badge.svg">
+  <img src="https://github.com/hahwul/dalfox/workflows/Docker%20build/badge.svg">
+  <img src="https://github.com/hahwul/dalfox/workflows/CodeQL/badge.svg">
 </h1>
 Finder Of XSS, and Dal is the Korean pronunciation of moon.
 
@@ -20,8 +23,10 @@ DalFox is a fast, powerful parameter analysis and XSS scanner, based on a golang
 - [Usage](#usage)
 - [POC format](#poc-format)
 - [Screenshots](#screenshots)
+- [Wiki](https://dalfox.hahwul.com/docs/home/)
 - [Contribute](https://github.com/hahwul/dalfox/blob/master/CONTRIBUTING.md)
-- [Wiki](https://github.com/hahwul/dalfox/wiki)
+- [Contributors](#contributors)
+
 
 ## Key features
 Mode: `url` `sxss` `pipe` `file` `server`
@@ -54,7 +59,7 @@ Mode: `url` `sxss` `pipe` `file` `server`
 And the various options required for the testing :D
 
 ## How to Install
-You can find some additional installation variations in the [Installation Guide](https://github.com/hahwul/dalfox/wiki/1.-Installation).
+You can find some additional installation variations in the [Installation Guide](https://dalfox.hahwul.com/docs/installation/).
 
 ## Usage
 ```plain
@@ -87,12 +92,14 @@ Global Flags:
       --mining-dom                Find new parameter in DOM (attribute/js value) (default true)
       --no-color                  Not use colorize
       --no-spinner                Not use spinner
+      --only-custom-payload       Only testing custom payload (required --custom-payload)
       --only-discovery            Only testing parameter analysis (same '--skip-xss-scanning' option)
   -o, --output string             Write to output file
   -p, --param string              Only testing selected parameters
       --proxy string              Send all request to proxy server (e.g --proxy http://127.0.0.1:8080)
       --silence                   Not printing all logs
       --skip-bav                  Skipping BAV(Basic Another Vulnerability) analysis
+      --skip-grepping             Skipping built-in grepping
       --skip-mining-all           Skipping ALL parameter mining
       --skip-mining-dict          Skipping Dict base parameter mining
       --skip-mining-dom           Skipping DOM base parameter mining
@@ -177,9 +184,11 @@ http://testphp.vulnweb.com/listproducts.php?artist=123&asdf=ff&cat=123%22%3E%3Cs
 | ![1416](https://user-images.githubusercontent.com/13212227/89736707-509b4200-daa6-11ea-9ca6-8055fa714401.png) | ![1419](https://user-images.githubusercontent.com/13212227/89736914-087d1f00-daa8-11ea-87e6-e33b78e2d344.png) |
 | Built-in and Custom Grepping                                 | Pipeline Scanning                                            |
 
+## Wiki
+[Wiki](https://dalfox.hahwul.com/docs/home/)
 
 ## Contribute
 [Contribute](https://github.com/hahwul/dalfox/blob/master/CONTRIBUTING.md)
 
-## Wiki
-[Wiki](https://github.com/hahwul/dalfox/wiki)
+## Contributors
+![](/CONTRIBUTORS.svg)
